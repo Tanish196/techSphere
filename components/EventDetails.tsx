@@ -5,7 +5,6 @@ import BookEvent from "@/components/BookEvent";
 import { findSimilarEvents } from "@/lib/actions/similarEvents.actions";
 import { IEvent } from "@/database/event.model";
 import EventCard from "@/components/EventCard";
-import { cacheLife } from "next/cache";
 
 const EventDetailItem = ({ icon, alt, label }: { icon: string, alt: string, label: string }) => (
     <div className="flex-row-gap-2 items-center">
@@ -37,12 +36,10 @@ const EventTags = ({ tags }: { tags: string[] }) => (
 )
 
 const EventDetails = async ({ params }: { params: Promise<string> }) => {
-    "use cache"
-    cacheLife('hours')
-    const slug = await params;
-    let event;
 
-    const req = await fetch(`${BASE_URL}/api/events/${slug}`)
+    const slug = await params;
+
+    let event;
     try {
         const request = await fetch(`${BASE_URL}/api/events/${slug}`, {
             next: { revalidate: 60 }
@@ -68,8 +65,8 @@ const EventDetails = async ({ params }: { params: Promise<string> }) => {
 
     const { description, image, overview, date, time, location, mode, agenda, audience, tags, organizer } = event;
 
-    if (!description) return notFound();
-    // const convertTags = convertTagsFunc(tags)
+    if(!description) return notFound();
+
     const similarEvents: IEvent[] = await findSimilarEvents(slug);
     // console.log({ similarEvents })
     return (
