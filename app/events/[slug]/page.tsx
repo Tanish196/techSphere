@@ -1,11 +1,17 @@
 import { notFound } from 'next/navigation';
 import EventDetails from "@/components/EventDetails"
 
+export async function generateStaticParams() {
+  // This function tells Next.js which paths to pre-render at build time
+  // For now, we'll return an empty array and rely on on-demand revalidation
+  return [];
+}
+
 const getEventDetails = async (slug: string) => {
   try {
     const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || '';
     const res = await fetch(`${BASE_URL}/api/events/${slug}`, {
-      next: { revalidate: 60 }
+      next: { revalidate: 60 } // Revalidate every 60 seconds
     });
 
     if (!res.ok) {
@@ -21,7 +27,14 @@ const getEventDetails = async (slug: string) => {
   }
 };
 
-const EventDetailsPage = async ({ params }: { params: { slug: string } }) => {
+// This tells Next.js that this is a dynamic route
+export const dynamic = 'force-dynamic';
+
+export default async function EventDetailsPage({ 
+  params 
+}: { 
+  params: { slug: string } 
+}) {
   const event = await getEventDetails(params.slug);
   
   if (!event) {
@@ -33,6 +46,4 @@ const EventDetailsPage = async ({ params }: { params: { slug: string } }) => {
       <EventDetails event={event} slug={params.slug} />
     </main>
   );
-};
-
-export default EventDetailsPage;
+}
