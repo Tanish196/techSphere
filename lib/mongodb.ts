@@ -1,4 +1,4 @@
-import mongoose, { Connection, ConnectOptions } from 'mongoose';
+import mongoose, { ConnectOptions } from 'mongoose';
 
 // Define the connection interface to extend the mongoose connection with our cache
 interface IMongoConnection {
@@ -21,10 +21,14 @@ if (!MONGODB_URI) {
  * in development. This prevents connections growing exponentially
  * during API Route usage.
  */
-let cached: IMongoConnection = (global as any).mongoose || { conn: null, promise: null };
+const globalWithMongoose = global as typeof globalThis & {
+  mongoose: IMongoConnection;
+};
 
-if (!(global as any).mongoose) {
-  (global as any).mongoose = { conn: null, promise: null };
+const cached: IMongoConnection = globalWithMongoose.mongoose || { conn: null, promise: null };
+
+if (!globalWithMongoose.mongoose) {
+  globalWithMongoose.mongoose = { conn: null, promise: null };
 }
 
 /**

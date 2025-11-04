@@ -6,14 +6,9 @@ export async function POST(req: NextRequest) {
     try {
         await connectToDatabase();
         const formData = await req.formData()
-        let event;
-        try {
-            event = Object.fromEntries(formData.entries())
-        } catch (e) {
-            return NextResponse.json({ message: 'Invalid JSON format' }, { status: 400 })
-        }
-        let tags = JSON.parse(formData.get("tags") as string)
-        let agenda = JSON.parse(formData.get("agenda") as string)
+        const event = Object.fromEntries(formData.entries())
+        const tags = JSON.parse(formData.get("tags") as string)
+        const agenda = JSON.parse(formData.get("agenda") as string)
         
         const file = formData.get('image') as File;
 
