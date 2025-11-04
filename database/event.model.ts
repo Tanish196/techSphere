@@ -24,7 +24,7 @@ export interface IEvent extends Document {
 const EventSchema = new Schema<IEvent>(
   {
     title: { type: String, required: true, trim: true },
-    slug: { type: String, required: true, unique: true, trim: true },
+    slug: { type: String, required: true, unique: true, trim: true, index: true },
     description: { type: String, required: true, trim: true },
     overview: { type: String, required: true, trim: true },
     image: { type: String, required: true, trim: true },
@@ -44,15 +44,19 @@ const EventSchema = new Schema<IEvent>(
   }
 );
 
-// Pre-save hook for slug generation, date normalization, and validation
-EventSchema.pre<IEvent>('save', function (next) {
-  // Slug generation: only if title changed
-  if (this.isModified('title')) {
+// Pre-validate hook to ensure slug is always set before validation
+EventSchema.pre<IEvent>('validate', function(next) {
+  if (this.title && !this.slug) {
     this.slug = this.title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)+/g, '');
   }
+  next();
+});
+
+// Pre-save hook for date normalization and validation
+EventSchema.pre<IEvent>('save', function(this: IEvent & { isNew?: boolean; isModified(field: string): boolean }, next: (err?: Error) => void) {
 
   // Date normalization: ensure ISO format
   if (this.isModified('date')) {
@@ -83,9 +87,6 @@ EventSchema.pre<IEvent>('save', function (next) {
 
   next();
 });
-
-// Unique index on slug
-EventSchema.index({ slug: 1 }, { unique: true });
 
 // Export Event model
 export const Event: Model<IEvent> = mongoose.models.Event || mongoose.model<IEvent>('Event', EventSchema);
