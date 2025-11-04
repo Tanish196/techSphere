@@ -1,49 +1,59 @@
-import { notFound } from 'next/navigation';
-import EventDetails from "@/components/EventDetails"
+'use client';
 
-export async function generateStaticParams() {
-  // This function tells Next.js which paths to pre-render at build time
-  // For now, we'll return an empty array and rely on on-demand revalidation
-  return [];
-}
+import { useEffect, useState } from 'react';
+import { useParams, notFound } from 'next/navigation';
+import EventDetails from "@/components/EventDetails";
 
-const getEventDetails = async (slug: string) => {
-  try {
-    const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || '';
-    const res = await fetch(`${BASE_URL}/api/events/${slug}`, {
-      next: { revalidate: 60 } // Revalidate every 60 seconds
-    });
+export default function EventDetailsPage() {
+  const params = useParams();
+  const [event, setEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    if (!res.ok) {
-      if (res.status === 404) return null;
-      throw new Error('Failed to fetch event');
+  useEffect(() => {
+    const fetchEvent = async () => {
+      try {
+        const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || '';
+        const res = await fetch(`${BASE_URL}/api/events/${params.slug}`);
+        
+        if (!res.ok) {
+          if (res.status === 404) {
+            notFound();
+          } else {
+            throw new Error('Failed to fetch event');
+          }
+        }
+
+        const data = await res.json();
+        setEvent(data.event);
+      } catch (err) {
+        console.error('Error fetching event:', err);
+        setError('Failed to load event');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (params?.slug) {
+      fetchEvent();
     }
+  }, [params?.slug]);
 
-    const data = await res.json();
-    return data.event;
-  } catch (error) {
-    console.error('Error fetching event:', error);
-    return null;
+  if (loading) {
+    return <div>Loading event...</div>;
   }
-};
 
-// This tells Next.js that this is a dynamic route
-export const dynamic = 'force-dynamic';
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
-export default async function EventDetailsPage({ 
-  params 
-}: { 
-  params: { slug: string } 
-}) {
-  const event = await getEventDetails(params.slug);
-  
   if (!event) {
-    notFound();
+    return notFound();
   }
 
   return (
     <main>
-      <EventDetails event={event} slug={params.slug} />
+      <EventDetails event={event} slug={params.slug as string} />
     </main>
   );
 }
