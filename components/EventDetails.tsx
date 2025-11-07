@@ -1,11 +1,14 @@
-import React from 'react';
-import { notFound } from 'next/navigation';
-import { IEvent } from "@/database";
-import { getSimilarEventsBySlug } from "@/lib/actions/event.actions";
+import React from 'react'
 import Image from "next/image";
 import BookEvent from "@/components/BookEvent";
 import EventCard from "@/components/EventCard";
-import { Suspense } from 'react';
+import { IEvent } from "@/database/event.model";
+
+interface EventDetailsProps {
+  event: any; // Using any to avoid type conflicts between client and server
+  slug: string;
+  similarEvents: any[];
+}
 
 const EventDetailItem = ({ icon, alt, label }: { icon: string; alt: string; label: string; }) => (
     <div className="flex-row-gap-2 items-center">
@@ -33,77 +36,13 @@ const EventTags = ({ tags }: { tags: string[] }) => (
     </div>
 )
 
-interface EventDetailsProps {
-  event: {
-    _id: string;
-    slug: string;
-    description: string;
-    image: string;
-    overview: string;
-    date: string;
-    time: string;
-    location: string;
-    mode: string;
-    agenda: string[];
-    audience: string;
-    tags: string[];
-    organizer: string;
-    title: string;
-    bookings?: number;
-  };
-  slug: string;
-}
-
-// Loading component for Suspense fallback
-function Loading() {
-  return <div>Loading event details...</div>;
-}
-
-async function SimilarEvents({ slug }: { slug: string }) {
-  const similarEvents = await getSimilarEventsBySlug(slug);
-  
-  return (
-    <div className="flex w-full flex-col gap-4 pt-20">
-      <h2>Similar Events</h2>
-      <div className="events">
-        {similarEvents.length > 0 && similarEvents.map((event: IEvent) => (
-          <EventCard key={event.title} {...event} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-const EventDetails = ({ event, slug }: EventDetailsProps) => {
-  if (!event) {
-    notFound();
-    return null;
-  }
-
-  const { 
-    description, 
-    image, 
-    overview, 
-    date, 
-    time, 
-    location, 
-    mode, 
-    agenda = [], 
-    audience, 
-    tags = [], 
-    organizer, 
-    _id 
-  } = event;
-
-  if (!description) {
-    notFound();
-    return null;
-  }
+const EventDetails = ({ event, slug, similarEvents }: EventDetailsProps) => {
+    const { description, image, overview, date, time, location, mode, agenda, audience, tags, organizer, bookings = 0 } = event;
 
     return (
         <section id="event">
             <div className="header">
-                <h1>{event.title || 'Event Details'}</h1>
+                <h1>Event Description</h1>
                 <p>{description}</p>
             </div>
 
@@ -141,22 +80,27 @@ const EventDetails = ({ event, slug }: EventDetailsProps) => {
                 <aside className="booking">
                     <div className="signup-card">
                         <h2>Book Your Spot</h2>
-                        {event.bookings && event.bookings > 0 ? (
+                        {bookings > 0 ? (
                             <p className="text-sm">
-                                Join {event.bookings} people who have already booked their spot!
+                                Join {bookings} people who have already booked their spot!
                             </p>
-                        ) : (
+                        ): (
                             <p className="text-sm">Be the first to book your spot!</p>
                         )}
 
-                        <BookEvent eventId={event._id} slug={event.slug} />
+                        <BookEvent eventId={event._id.toString()} slug={slug} />
                     </div>
                 </aside>
             </div>
 
-            <Suspense fallback={<div>Loading similar events...</div>}>
-              <SimilarEvents slug={slug} />
-            </Suspense>
+            <div className="flex w-full flex-col gap-4 pt-20">
+                <h2>Similar Events</h2>
+                <div className="events">
+                    {similarEvents.length > 0 && similarEvents.map((similarEvent: any) => (
+                        <EventCard key={similarEvent.slug} {...similarEvent} />
+                    ))}
+                </div>
+            </div>
         </section>
     )
 }

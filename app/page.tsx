@@ -1,3 +1,5 @@
+// Still in works
+
 import { Suspense } from 'react';
 import Explorebtn from '@/components/ExploreBtn';
 import EventCard from '@/components/EventCard';
@@ -10,7 +12,6 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || '';
 // without re-fetching the data
 async function getEvents(): Promise<IEvent[]> {
   const apiUrl = `${BASE_URL}/api/events`;
-  console.log('Fetching events from:', apiUrl);
   
   const res = await fetch(apiUrl, {
     next: { 
@@ -38,7 +39,7 @@ async function EventsList() {
   return (
     <ul className='events list-none'>
       {events.map((event: IEvent) => (
-        <li key={event.title}><EventCard {...event} /></li>
+        <li key={event.slug}><EventCard {...event} /></li>
       ))}
     </ul>
   );
@@ -58,7 +59,7 @@ const Home = () => {
       <p className='text-center mt-5'>Welcome to the world full of Developer events</p>
       <Explorebtn />
 
-      <div>
+      <div id="events">
         <h3>Featured Events</h3>
         <Suspense fallback={<EventsLoading />}>
           <EventsList />
