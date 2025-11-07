@@ -1,7 +1,7 @@
 // Still in works
 
 import { Suspense } from 'react';
-import Explorebtn from '@/components/ExploreBtn';
+import ExploreBtn from '@/components/ExploreBtn';
 import EventCard from '@/components/EventCard';
 import { IEvent } from '@/database/event.model';
 
@@ -57,7 +57,7 @@ const Home = () => {
         Dive into the world of Tech
       </h1>
       <p className='text-center mt-5'>Welcome to the world full of Developer events</p>
-      <Explorebtn />
+      <ExploreBtn />
 
       <div id="events">
         <h3>Featured Events</h3>
