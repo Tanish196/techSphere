@@ -58,7 +58,7 @@ export function PostHogPageView() {
       if (hasTrackedRef.current || !pathname) return;
       
       // Ensure PostHog is loaded
-      if (typeof window === 'undefined' || !(window as any).posthog) {
+      if (typeof window === 'undefined' || !window.posthog?.__loaded) {
         console.warn('PostHog not loaded, skipping pageview tracking');
         return;
       }

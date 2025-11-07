@@ -11,7 +11,7 @@ type RouteParams = {
 // Async GET function to get the required event
 export async function GET(req: NextRequest, { params }: RouteParams): Promise<NextResponse> {
     try {
-        await connectToDatabase()
+        await connectToDatabase();
         const { slug } = await params;
 
         if (!slug || typeof slug !== 'string' || slug.trim() === '')
