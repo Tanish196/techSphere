@@ -1,11 +1,18 @@
+import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import EventDetails from "@/components/EventDetails";
 import { getSimilarEventsBySlug } from "@/lib/actions/event.actions";
 
 const getEventDetails = async (slug: string) => {
   try {
-    const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || '';
-    const res = await fetch(`${BASE_URL}/api/events/${slug}`, {
+    const requestHeaders = headers();
+    const host = requestHeaders.get('host');
+    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL ??
+      (host ? `${protocol}://${host}` : 'http://localhost:3000');
+
+    const res = await fetch(`${baseUrl}/api/events/${slug}`, {
       next: { revalidate: 60 } // Revalidate every 60 seconds
     });
 
