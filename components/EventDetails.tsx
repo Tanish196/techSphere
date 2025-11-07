@@ -4,32 +4,12 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import EventCard from './EventCard';
 import BookEvent from './BookEvent';
-
-// Simple event type for client components
-type EventData = {
-  _id: string;
-  title: string;
-  slug: string;
-  description: string;
-  overview: string;
-  image: string;
-  venue: string;
-  location: string;
-  date: string;
-  time: string;
-  mode: string;
-  audience: string;
-  agenda: string[];
-  organizer: string;
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-};
+import { Event } from '@/types/Event';
 
 interface EventDetailsProps {
-  event: EventData;
+  event: Event;
   slug: string;
-  similarEvents?: EventData[];
+  similarEvents?: Event[];
 }
 
 // Helper components
@@ -141,7 +121,7 @@ export default function EventDetails({ event, slug, similarEvents }: EventDetail
       <div className="flex w-full flex-col gap-4 pt-20">
         <h2>Similar Events</h2>
         <div className="events">
-          {similarEvents && similarEvents.length > 0 && similarEvents.map((similarEvent: EventData) => (
+          {similarEvents && similarEvents.length > 0 && similarEvents.map((similarEvent: Event) => (
             <EventCard 
               key={similarEvent._id} 
               title={similarEvent.title}

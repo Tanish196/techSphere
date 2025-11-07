@@ -2,8 +2,9 @@
 
 import Event, { IEvent } from '@/database/event.model';
 import connectDB from "@/lib/mongodb";
+import type { Event as EventType } from '@/types/Event';
 
-export const getAllEvents = async () => {
+export const getAllEvents = async (): Promise<EventType[]> => {
     try {
         await connectDB();
         const events = await Event.find().sort({ "createdAt": -1 });
@@ -34,7 +35,7 @@ export const getAllEvents = async () => {
     }
 }
 
-export const getSimilarEventsBySlug = async (slug: string) => {
+export const getSimilarEventsBySlug = async (slug: string): Promise<EventType[]> => {
     try {
         await connectDB();
         const event = await Event.findOne({ slug });
@@ -74,7 +75,7 @@ export const getSimilarEventsBySlug = async (slug: string) => {
     }
 }
 
-export const getEventBySlug = async (slug: string) => {
+export const getEventBySlug = async (slug: string): Promise<EventType | null> => {
     try {
         await connectDB();
         const event = await Event.findOne({ slug });

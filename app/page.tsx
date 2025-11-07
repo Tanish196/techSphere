@@ -1,22 +1,12 @@
 // Still in works
 
 import { Suspense } from 'react';
-import ExploreBtn from '@/components/ExploreBtn';
+import ExploreBtn from '@/components/Explorebtn';
 import EventCard from '@/components/EventCard';
 import { getAllEvents } from '@/lib/actions/event.actions';
+import { EventCardData } from '@/types/Event';
 
 export const dynamic = 'force-dynamic';
-
-// Simple event type for client components
-type EventCardData = {
-  _id: string;
-  title: string;
-  image: string;
-  slug: string;
-  location: string;
-  date: string;
-  time: string;
-};
 
 // This is a separate component that will be wrapped in Suspense
 async function EventsList() {
