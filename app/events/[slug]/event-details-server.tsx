@@ -5,7 +5,7 @@ import { getSimilarEventsBySlug } from "@/lib/actions/event.actions";
 
 const getEventDetails = async (slug: string) => {
   try {
-    const requestHeaders = headers();
+    const requestHeaders = await headers();
     const host = requestHeaders.get('host');
     const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
     const baseUrl =
