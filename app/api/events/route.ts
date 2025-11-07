@@ -2,6 +2,8 @@ import { Event } from "@/database";
 import connectToDatabase from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary"
+
+// POST function to store the event
 export async function POST(req: NextRequest) {
     try {
         await connectToDatabase();
@@ -33,6 +35,7 @@ export async function POST(req: NextRequest) {
     }
 }
 
+// GET function to get all the events
 export async function GET() {
     try {
         await connectToDatabase();

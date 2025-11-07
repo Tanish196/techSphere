@@ -1,163 +1,139 @@
-import React from 'react';
-import { notFound } from 'next/navigation';
-import { IEvent } from "@/database";
-import { getSimilarEventsBySlug } from "@/lib/actions/event.actions";
-import Image from "next/image";
-import BookEvent from "@/components/BookEvent";
-import EventCard from "@/components/EventCard";
-import { Suspense } from 'react';
+'use client';
 
-const EventDetailItem = ({ icon, alt, label }: { icon: string; alt: string; label: string; }) => (
-    <div className="flex-row-gap-2 items-center">
-        <Image src={icon} alt={alt} width={17} height={17} />
-        <p>{label}</p>
-    </div>
-)
-
-const EventAgenda = ({ agendaItems }: { agendaItems: string[] }) => (
-    <div className="agenda">
-        <h2>Agenda</h2>
-        <ul>
-            {agendaItems.map((item) => (
-                <li key={item}>{item}</li>
-            ))}
-        </ul>
-    </div>
-)
-
-const EventTags = ({ tags }: { tags: string[] }) => (
-    <div className="flex flex-row gap-1.5 flex-wrap">
-        {tags.map((tag) => (
-            <div className="pill" key={tag}>{tag}</div>
-        ))}
-    </div>
-)
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import EventCard from './EventCard';
+import BookEvent from './BookEvent';
+import { Event } from '@/types/Event';
 
 interface EventDetailsProps {
-  event: {
-    _id: string;
-    slug: string;
-    description: string;
-    image: string;
-    overview: string;
-    date: string;
-    time: string;
-    location: string;
-    mode: string;
-    agenda: string[];
-    audience: string;
-    tags: string[];
-    organizer: string;
-    title: string;
-    bookings?: number;
-  };
+  event: Event;
   slug: string;
+  similarEvents?: Event[];
 }
 
-// Loading component for Suspense fallback
-function Loading() {
-  return <div>Loading event details...</div>;
-}
+// Helper components
+const EventDetailItem = ({ icon, alt, label }: { icon: string; alt: string; label: string; }) => (
+  <div className="flex-row-gap-2 items-center">
+    <Image src={icon} alt={alt} width={17} height={17} />
+    <p>{label}</p>
+  </div>
+);
 
-async function SimilarEvents({ slug }: { slug: string }) {
-  const similarEvents = await getSimilarEventsBySlug(slug);
-  
-  return (
-    <div className="flex w-full flex-col gap-4 pt-20">
-      <h2>Similar Events</h2>
-      <div className="events">
-        {similarEvents.length > 0 && similarEvents.map((event: IEvent) => (
-          <EventCard key={event.title} {...event} />
-        ))}
-      </div>
-    </div>
-  );
-}
+const EventAgenda = ({ agendaItems }: { agendaItems: string[] }) => (
+  <div className="agenda">
+    <h2>Agenda</h2>
+    <ul>
+      {agendaItems.map((item, index) => (
+        <li key={index}>{item}</li>
+      ))}
+    </ul>
+  </div>
+);
 
-const EventDetails = ({ event, slug }: EventDetailsProps) => {
+const EventTags = ({ tags }: { tags: string[] }) => (
+  <div className="flex flex-row gap-1.5 flex-wrap">
+    {tags.map((tag, index) => (
+      <div className="pill" key={index}>{tag}</div>
+    ))}
+  </div>
+);
+
+// Main EventDetails component
+export default function EventDetails({ event, slug, similarEvents }: EventDetailsProps) {
   if (!event) {
-    notFound();
-    return null;
+    return <div className="text-center py-10">Event not found</div>;
   }
 
-  const { 
-    description, 
-    image, 
-    overview, 
-    date, 
-    time, 
-    location, 
-    mode, 
-    agenda = [], 
-    audience, 
-    tags = [], 
-    organizer, 
-    _id 
+  const {
+    _id,
+    title = 'Untitled Event',
+    description = '',
+    image = '/placeholder-event.jpg',
+    overview = '',
+    date = 'TBD',
+    time = 'TBD',
+    location = 'TBD',
+    mode = 'TBD',
+    agenda = [],
+    audience = 'All',
+    tags = [],
+    organizer = 'TBD',
+    venue = 'TBD'
   } = event;
 
-  if (!description) {
-    notFound();
-    return null;
-  }
+  const bookings = 0;
 
-    return (
-        <section id="event">
-            <div className="header">
-                <h1>{event.title || 'Event Details'}</h1>
-                <p>{description}</p>
-            </div>
+  return (
+    <section id="event">
+      <div className="header">
+        <h1>Event Description</h1>
+        <p>{description}</p>
+      </div>
 
-            <div className="details">
-                {/*    Left Side - Event Content */}
-                <div className="content">
-                    <Image src={image} alt="Event Banner" width={800} height={800} className="banner" />
+      <div className="details">
+        {/* Left Side - Event Content */}
+        <div className="content">
+          <Image src={image} alt="Event Banner" width={800} height={800} className="banner" />
 
-                    <section className="flex-col-gap-2">
-                        <h2>Overview</h2>
-                        <p>{overview}</p>
-                    </section>
+          <section className="flex-col-gap-2">
+            <h2>Overview</h2>
+            <p>{overview}</p>
+          </section>
 
-                    <section className="flex-col-gap-2">
-                        <h2>Event Details</h2>
+          <section className="flex-col-gap-2">
+            <h2>Event Details</h2>
 
-                        <EventDetailItem icon="/icons/calendar.svg" alt="calendar" label={date} />
-                        <EventDetailItem icon="/icons/clock.svg" alt="clock" label={time} />
-                        <EventDetailItem icon="/icons/pin.svg" alt="pin" label={location} />
-                        <EventDetailItem icon="/icons/mode.svg" alt="mode" label={mode} />
-                        <EventDetailItem icon="/icons/audience.svg" alt="audience" label={audience} />
-                    </section>
+            <EventDetailItem icon="/icons/calendar.svg" alt="calendar" label={date} />
+            <EventDetailItem icon="/icons/clock.svg" alt="clock" label={time} />
+            <EventDetailItem icon="/icons/pin.svg" alt="pin" label={location} />
+            <EventDetailItem icon="/icons/mode.svg" alt="mode" label={mode} />
+            <EventDetailItem icon="/icons/audience.svg" alt="audience" label={audience} />
+          </section>
 
-                    <EventAgenda agendaItems={agenda} />
+          {agenda.length > 0 && <EventAgenda agendaItems={agenda} />}
 
-                    <section className="flex-col-gap-2">
-                        <h2>About the Organizer</h2>
-                        <p>{organizer}</p>
-                    </section>
+          <section className="flex-col-gap-2">
+            <h2>About the Organizer</h2>
+            <p>{organizer}</p>
+          </section>
 
-                    <EventTags tags={tags} />
-                </div>
+          {tags.length > 0 && <EventTags tags={tags} />}
+        </div>
 
-                {/*    Right Side - Booking Form */}
-                <aside className="booking">
-                    <div className="signup-card">
-                        <h2>Book Your Spot</h2>
-                        {event.bookings && event.bookings > 0 ? (
-                            <p className="text-sm">
-                                Join {event.bookings} people who have already booked their spot!
-                            </p>
-                        ) : (
-                            <p className="text-sm">Be the first to book your spot!</p>
-                        )}
+        {/* Right Side - Booking Form */}
+        <aside className="booking">
+          <div className="signup-card">
+            <h2>Book Your Spot</h2>
+            {bookings > 0 ? (
+              <p className="text-sm">
+                Join {bookings} people who have already booked their spot!
+              </p>
+            ) : (
+              <p className="text-sm">Be the first to book your spot!</p>
+            )}
 
-                        <BookEvent eventId={event._id} slug={event.slug} />
-                    </div>
-                </aside>
-            </div>
+            <BookEvent eventId={_id} slug={slug} />
+          </div>
+        </aside>
+      </div>
 
-            <Suspense fallback={<div>Loading similar events...</div>}>
-              <SimilarEvents slug={slug} />
-            </Suspense>
-        </section>
-    )
+      <div className="flex w-full flex-col gap-4 pt-20">
+        <h2>Similar Events</h2>
+        <div className="events">
+          {similarEvents && similarEvents.length > 0 && similarEvents.map((similarEvent: Event) => (
+            <EventCard 
+              key={similarEvent._id} 
+              title={similarEvent.title}
+              image={similarEvent.image}
+              slug={similarEvent.slug}
+              location={similarEvent.location}
+              date={similarEvent.date}
+              time={similarEvent.time}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 }
-export default EventDetails
