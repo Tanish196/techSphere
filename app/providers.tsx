@@ -5,41 +5,8 @@ import { PostHogProvider as PHProvider } from 'posthog-js/react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, Suspense, useRef } from 'react';
 
-// Initialize PostHog only once
-const initPostHog = () => {
-  // Skip initialization if we're not in the browser
-  if (typeof window === 'undefined') return;
-
-  const posthogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
-  const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com';
-
-  if (!posthogKey) {
-    console.warn('PostHog key is not set. Analytics will be disabled.');
-    return;
-  }
-
-  try {
-    // Simple configuration
-    posthog.init(posthogKey, {
-      api_host: posthogHost,
-      capture_pageview: false, // We'll handle pageviews manually
-      autocapture: process.env.NODE_ENV === 'production',
-      disable_session_recording: process.env.NODE_ENV !== 'production',
-      loaded: (ph) => {
-        if (process.env.NODE_ENV === 'development') {
-          ph.debug();
-        }
-        // Mark as loaded
-        (window as any).posthog = ph;
-      }
-    });
-  } catch (error) {
-    console.error('Failed to initialize PostHog:', error);
-  }
-};
-
-// Initialize PostHog when the module loads
-initPostHog();
+// Note: PostHog is initialized in instrumentation-client.ts
+// This file only provides the React context wrapper
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   return <PHProvider client={posthog}>{children}</PHProvider>;
@@ -58,8 +25,7 @@ export function PostHogPageView() {
       if (hasTrackedRef.current || !pathname) return;
       
       // Ensure PostHog is loaded
-      if (typeof window === 'undefined' || !window.posthog?.__loaded) {
-        console.warn('PostHog not loaded, skipping pageview tracking');
+      if (typeof window === 'undefined' || !posthog.__loaded) {
         return;
       }
 
@@ -76,7 +42,10 @@ export function PostHogPageView() {
         
         hasTrackedRef.current = true;
       } catch (error) {
-        console.error('Failed to track pageview:', error);
+        // Silently fail in development
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('PostHog pageview tracking failed:', error);
+        }
       }
     }, [pathname, searchParams]);
 
