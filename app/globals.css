@@ -139,6 +139,13 @@
     }
   }
 
+  .text-gradient {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--color-blue) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
   #explore-btn {
     @apply border-dark-200 bg-dark-100 flex w-fit cursor-pointer  rounded-full border px-8 py-3.5 max-sm:w-full text-center;
 
