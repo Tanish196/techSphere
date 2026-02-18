@@ -2,12 +2,13 @@
 
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { createEvent } from '@/lib/actions/event.actions';
 
 const CreateEvent = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Form state for dynamic fields
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
@@ -36,32 +37,32 @@ const CreateEvent = () => {
     setAgenda(agenda.filter((_, i) => i !== index));
   };
 
+  /* 
+    Updated to use Server Action for better body size limit handling.
+    Original fetch logic removed.
+  */
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
 
     const formData = new FormData(e.currentTarget);
-    
+
     // Add tags and agenda as JSON strings
     formData.append('tags', JSON.stringify(tags));
     formData.append('agenda', JSON.stringify(agenda));
 
     try {
-      const response = await fetch('/api/events', {
-        method: 'POST',
-        body: formData,
-      });
+      // Use Server Action instead of fetch
+      const result = await createEvent(formData);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to create event');
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to create event');
       }
 
       // Redirect to the newly created event page
-      if (data.event?.slug) {
-        router.push(`/events/${data.event.slug}`);
+      if (result.event?.slug) {
+        router.push(`/events/${result.event.slug}`);
       } else {
         router.push('/');
       }
@@ -74,7 +75,7 @@ const CreateEvent = () => {
   return (
     <section className="max-w-4xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">Create New Event</h1>
-      
+
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {error}
