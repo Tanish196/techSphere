@@ -35,6 +35,6 @@ export async function GET(req: NextRequest, { params }: RouteParams): Promise<Ne
         );
     } catch (e) {
         console.error(e)
-        return NextResponse.json({ message: 'Event Creation Failed', error: e instanceof Error ? e.message : 'Unknown Error' }, { status: 500 })
+        return NextResponse.json({ message: 'Event Fetch Failed', error: e instanceof Error ? e.message : 'Unknown Error' }, { status: 500 })
     }
 } 
